@@ -2,6 +2,8 @@ from librespot.core import Session
 from librespot.metadata import PlaylistId, TrackId
 from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 from audio.vorbis_decoder import VorbisDecoder
+import soundfile as sf
+import numpy as np
 
 class SpotTools:
     def __init__(self):
@@ -65,9 +67,35 @@ class SpotTools:
             print(f"Error fetching metadata for {track_uri}: {e}")
             return f"Unknown Track ({track_uri})"
 
-    def get_track_pcm(self, track_uri: str) -> bytes:
+    def get_track_metadata_full(self, track_uri: str) -> dict:
         """
-        Descarga el track completo en formato Ogg Vorbis y lo decodifica a raw PCM.
+        Obtiene el metadato completo para una canción suelta en formato diccionario.
+        """
+        self._ensure_session()
+        try:
+            t_id = TrackId.from_uri(track_uri)
+            metadata = self.session.api().get_metadata_4_track(t_id)
+            title = metadata.name
+            artist = metadata.artist[0].name if metadata.artist else "Unknown Artist"
+            album = metadata.album.name if metadata.album else "Unknown Album"
+            return {
+                "title": title,
+                "artist": artist,
+                "album": album,
+                "uri": track_uri
+            }
+        except Exception as e:
+            print(f"Error fetching metadata for {track_uri}: {e}")
+            return {
+                "title": f"Unknown Track ({track_uri})",
+                "artist": "Unknown Artist",
+                "album": "Unknown Album",
+                "uri": track_uri
+            }
+
+    def download_track_wav(self, track_uri: str, save_path: str) -> bool:
+        """
+        Descarga el track completo en formato Ogg Vorbis, lo decodifica, y lo guarda en WAV.
         """
         self._ensure_session()
         
@@ -79,13 +107,18 @@ class SpotTools:
                 False, 
                 None
             )
-            # Read the entire stream byte by byte (returns bytes object in Ogg Vorbis)
+            # Read the entire stream
             ogg_bytes = stream.input_stream.stream().read(-1)
             
-            print(f"[SpotTools] Decodificando Ogg Vorbis para {track_uri}...")
+            # Decode using our PyAV decoder
             pcm_bytes = VorbisDecoder.decode(ogg_bytes)
             
-            return pcm_bytes
+            # Save to standard WAV
+            data = np.frombuffer(pcm_bytes, dtype=np.int16).reshape(-1, 2)
+            sf.write(save_path, data, 44100)
+                
+            print(f"[SpotTools] Track decodificado y guardado en caché: {save_path}")
+            return True
         except Exception as e:
-            print(f"[SpotTools] Fallo al descargar o decodificar el track {track_uri}: {e}")
-            return None
+            print(f"[SpotTools] Fallo al descargar el track {track_uri}: {e}")
+            return False

@@ -43,3 +43,25 @@ If you have a `.glb` file that doesn't look right (off-center or wrong rotation)
 python 3d_fixer.py path/to/your_model.glb
 ```
 This will generate a `_fixed.glb` file ready to be loaded into the player.
+
+
+## Credits
+
+### Libraries
+
+- librespot-python
+  https://github.com/kokarare1212/librespot-python
+
+### 3D Assets
+
+- Vinyl Record
+  https://sketchfab.com/3d-models/7-vinyl-record-a3b32c49a1044b59a8ee2a0bdb9fd4df
+
+- Playboi Carti Vinyl
+  https://sketchfab.com/3d-models/playboi-carti-vinyl-a30db4efabc84ca68483d00fa164a1a1
+
+- Very Simple CD Disc
+  https://sketchfab.com/3d-models/very-simple-cd-disc-9749f5ba1221476993376a3cb8fee1a5
+
+- Vinyl Record
+  https://sketchfab.com/3d-models/vinyl-record-1bbf5d34cae24d3d9cfa460022aaebc6

@@ -49,11 +49,41 @@ class VinylVisual(QWidget):
             self.container_3d.hide()
         self.update()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        
+        # Restore visual_angle with the steady-state lag so the smoothing filter
+        # immediately produces the correct visual velocity (no "starting up" effect).
+        # The filter is: step = diff * 0.15, so at steady state: diff = step / 0.15.
+        last_step = getattr(self, "_last_visual_step", 0)
+        steady_state_lag = last_step / 0.15 if last_step > 0 else 0
+        self.visual_angle = self.vinyl_model.angle - steady_state_lag
+        self._prev_physical_angle = self.vinyl_model.angle
+        
+        if self.current_skin == "3d":
+            self.skin_3d.update_rotation(self.visual_angle)
+            self.skin_3d.update_tilt_y(self.current_tilt_y)
+
     def paintEvent(self, event):
         painter = QPainter(self)
+        
+        # Check for time-skips (OS pausing UI thread while dragging window, etc.)
+        # 0.5 radians takes ~140ms at 33RPM. If a frame took longer than that, it's a lag spike.
+        prev_phys = getattr(self, "_prev_physical_angle", self.vinyl_model.angle)
+        physical_jump = self.vinyl_model.angle - prev_phys
+        if abs(physical_jump) > 0.5:
+            # If a huge jump occurred, shift the visual angle by the exact same amount.
+            # This perfectly preserves the steady-state lag, so the visual rotation 
+            # velocity doesn't drop to zero (which causes the "starting up" effect).
+            self.visual_angle += physical_jump
+            
+        self._prev_physical_angle = self.vinyl_model.angle
+        
         # Visual angle animation (chases the physical angle to avoid sudden jumps)
         diff = self.vinyl_model.angle - self.visual_angle
-        self.visual_angle += diff * 0.15 # Approaches 15% per frame
+        step = diff * 0.15  # Approaches 15% per frame
+        self.visual_angle += step
+        self._last_visual_step = step  # Remember for tab-switch velocity restore
         
         # Y rotation physics (acceleration and braking)
         if self.tilt_y_active:
@@ -128,6 +158,20 @@ class VinylVisual(QWidget):
         if event.button() == Qt.LeftButton:
             self.is_dragging = False
 
+    def start_rotate(self):
+        if not self.returning_to_zero and not self.tilt_y_active:
+            self.tilt_y_active = True
+            print("=== [Y ROTATION] ACTIVATED ===")
+
+    def stop_rotate(self):
+        if self.tilt_y_active:
+            self.tilt_y_active = False
+            if self.current_tilt_y > 0.0:
+                self.returning_to_zero = True
+                print("=== [Y ROTATION] Stopping... waiting to return to 0 ===")
+            else:
+                print("=== [Y ROTATION] Stopped at position 0 ===")
+
     def keyPressEvent(self, event):
         if self.current_skin != "3d":
             super().keyPressEvent(event)
@@ -151,22 +195,6 @@ class VinylVisual(QWidget):
         # Right Vector
         rx = math.cos(yaw)
         rz = -math.sin(yaw)
-        
-        # Continuous Y rotation (toggled with R)
-        if event.key() == Qt.Key_R:
-            if self.tilt_y_active:
-                # If active, deactivate it but mark it to return to zero
-                self.tilt_y_active = False
-                if self.current_tilt_y > 0.0:
-                    self.returning_to_zero = True
-                    print("=== [Y ROTATION] Stopping... waiting to return to 0 ===")
-                else:
-                    print("=== [Y ROTATION] Stopped at position 0 ===")
-            elif not self.returning_to_zero:
-                # Only activate if not currently returning to zero
-                self.tilt_y_active = True
-                print("=== [Y ROTATION] ACTIVATED ===")
-            return
             
         # Rotation (Look around) - Arrows
         if event.key() == Qt.Key_Up:

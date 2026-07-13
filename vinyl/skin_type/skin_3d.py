@@ -9,7 +9,6 @@ class Skin3D:
         # We use QQuickWidget to embed QML inside a standard QWidget
         self.view = QQuickWidget()
         self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
-        self.view.setAttribute(Qt.WA_AlwaysStackOnTop)
         self.view.setClearColor(Qt.transparent)
         
         # Path to the glb file (uses the model normalized by 3d_fixer.py)
@@ -47,7 +46,7 @@ Item {{
     // Camera properties
     property real camX: 0
     property real camY: 0
-    property real camZ: 18
+    property real camZ: 16
     property real camPitch: 0
     property real camYaw: 0
     property real camRoll: 0

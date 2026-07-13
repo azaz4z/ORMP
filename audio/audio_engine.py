@@ -149,6 +149,10 @@ class AudioEngine:
         self.stream.write(data.astype(np.int16).tobytes())
 
     def process(self, start_pos, end_pos):
+        if self.stream is None:
+            import time
+            time.sleep(0.01)
+            return
         data = self.generate_chunk(start_pos, end_pos)
         self.write(data)
 

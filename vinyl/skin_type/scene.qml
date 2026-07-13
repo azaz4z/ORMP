@@ -8,17 +8,17 @@ Item {
     width: 800
     height: 800
     
-    // Angulo del vinilo (controlado desde Python)
+    // Vinyl angle (controlled from Python)
     property real vinylAngle: 0
     property real vinylTiltY: 0
     
-    // URL del modelo 3D
+    // 3D model URL
     property url modelSource: "file:///c:/Users/Aristoteles/Documents/Programacion/Python/ORMP/skins/very_simple_cd-_disc.glb"
     
-    // Propiedades de camara
+    // Camera properties
     property real camX: 0
     property real camY: 0
-    property real camZ: 18
+    property real camZ: 16
     property real camPitch: 0
     property real camYaw: 0
     property real camRoll: 0
@@ -30,23 +30,23 @@ Item {
             clearColor: "#202020"
             backgroundMode: SceneEnvironment.Color
             
-            // Máxima calidad de Anti-Aliasing (Super Sampling) para eliminar bordes de sierra
+            // Maximum Anti-Aliasing quality (Super Sampling) to eliminate jagged edges
             antialiasingMode: SceneEnvironment.SSAA
             antialiasingQuality: SceneEnvironment.VeryHigh
             
-            // AA Temporal: Ayuda enormemente a reducir el parpadeo en las ranuras del vinilo
+            // Temporal AA: Greatly helps reduce flickering in vinyl grooves
             temporalAAEnabled: true
             
-            // Específico para suavizar los brillos especulares (los reflejos blancos)
+            // Specific for smoothing specular highlights (white reflections)
             specularAAEnabled: true
             
-            // Image Based Lighting (IBL) para reflejos realistas PBR
+            // Image Based Lighting (IBL) for realistic PBR reflections
             lightProbe: Texture {
                 source: "file:///c:/Users/Aristoteles/Documents/Programacion/Python/ORMP/skins/studio.hdr"
             }
-            probeExposure: 0.3 // Mantenemos el HDRI tenue solo para dar textura
+            probeExposure: 0.3 // Keep HDRI dim just for texture
             
-            // Mejora muchísimo los materiales PBR
+            // Greatly improves PBR materials
             tonemapMode: SceneEnvironment.TonemapACES
         }
 
@@ -59,12 +59,12 @@ Item {
             eulerRotation.y: root.camYaw
             eulerRotation.z: root.camRoll
             
-            // Permitir que la cámara se acerque mucho sin cortar el modelo
+            // Allow camera to get very close without clipping the model
             clipNear: 0.1
             clipFar: 1000.0
         }
 
-        // Efecto "Linterna / Foco" que te gustaba antes
+        // Flashlight / Spotlight effect that you liked before
         PointLight {
             x: 0
             y: 5
@@ -74,11 +74,11 @@ Item {
             ambientColor: "#111111"
         }
 
-        // Node padre para el tilt en Y
+        // Parent Node for Y tilt
         Node {
             eulerRotation.y: root.vinylTiltY
             
-            // Node hijo aplica SOLO el giro del vinilo en Z
+            // Child Node applies ONLY vinyl Z rotation
             Node {
                 eulerRotation.z: root.vinylAngle
                 

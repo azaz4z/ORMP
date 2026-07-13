@@ -1,7 +1,23 @@
+TODO.txt
+
+
 credentials.json
+saved_sources.json
+
+
+.ignore
+
 
 # Python cache
 __pycache__/
 *.py[cod]
 
-.ignore
+
+# Ignore all songs
+songs/*
+# Except sneaky_snitch.mp3
+!songs/sneaky_snitch.mp3
+
+
+# Ignore all states
+states/*

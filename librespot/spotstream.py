@@ -4,7 +4,7 @@ from librespot.core import Session
 from librespot.metadata import TrackId
 from librespot.audio.decoders import AudioQuality, VorbisOnlyAudioQuality
 
-from audio_engine import AudioEngine
+from audio.audio_engine import AudioEngine
 
 def main():
     print("Iniciando sesión en Spotify (librespot)...")
