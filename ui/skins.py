@@ -42,9 +42,16 @@ class SkinFrame(QFrame):
         self.layout.addWidget(self.default_checkbox)
         self.layout.addWidget(self.model_3d_checkbox)
         
-        self.load_skin_button = QPushButton("Cargar Modelo (.glb) Personalizado...", self)
+        self.load_skin_button = QPushButton("Load Custom Model (.glb)...", self)
         self.load_skin_button.setObjectName("load_skin_button")
         self.layout.addWidget(self.load_skin_button)
+        
+        self.layout.addSpacing(20)
+        
+        self.fixer_button = QPushButton("🛠️ Open 3D Model Fixer...", self)
+        self.fixer_button.setObjectName("fixer_button")
+        self.fixer_button.setToolTip("Open the tool to normalize and correct 3D models")
+        self.layout.addWidget(self.fixer_button)
         
         # Spacer final para empujar todo hacia arriba
         self.spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)

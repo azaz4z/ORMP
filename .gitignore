@@ -6,6 +6,7 @@ saved_sources.json
 
 
 .ignore
+.spotify_web_cache
 
 
 # Python cache

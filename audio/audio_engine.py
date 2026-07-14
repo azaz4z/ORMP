@@ -30,7 +30,23 @@ class AudioEngine:
         self.fade_out = 1.0 - self.fade_in
 
     def load_file(self, file_path):
-        data, samplerate = sf.read(file_path, dtype='int16')
+        try:
+            data, samplerate = sf.read(file_path, dtype='int16')
+        except Exception as e:
+            print(f"[AudioEngine] sf.read failed para {file_path}: {e}. Intentando con PyAV...")
+            import av
+            container = av.open(file_path, mode='r')
+            resampler = av.AudioResampler(format='s16', layout='stereo', rate=44100)
+            pcm_data = bytearray()
+            for frame in container.decode(audio=0):
+                resampled_frames = resampler.resample(frame)
+                for r_frame in resampled_frames:
+                    pcm_data.extend(r_frame.to_ndarray().tobytes())
+            for r_frame in resampler.resample(None):
+                pcm_data.extend(r_frame.to_ndarray().tobytes())
+            data = np.frombuffer(pcm_data, dtype=np.int16)
+            data = data.reshape(-1, 2)
+            samplerate = 44100
         
         if data.ndim == 1:
             data = data.reshape(-1, 1)

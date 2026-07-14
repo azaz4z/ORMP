@@ -56,11 +56,28 @@ class SourceFrame(QFrame):
         
         self.layout.addLayout(self.local_folder_layout)
         
-        # Saved local folders list
-        self.local_saved_list = QListWidget(self)
-        self.local_saved_list.setObjectName("local_saved_list")
-        self.local_saved_list.setFixedHeight(100) # Small fixed height
-        self.layout.addWidget(self.local_saved_list)
+        # Split Local view: Albums (Left) and Songs Preview (Right)
+        self.local_lists_layout = QHBoxLayout()
+        
+        self.local_albums_list = QListWidget(self)
+        self.local_albums_list.setObjectName("local_albums_list")
+        self.local_albums_list.setFixedHeight(150)
+        
+        self.local_tracks_preview_list = QListWidget(self)
+        self.local_tracks_preview_list.setObjectName("local_tracks_preview_list")
+        self.local_tracks_preview_list.setFixedHeight(150)
+        self.local_tracks_preview_list.setSelectionMode(QListWidget.SingleSelection)
+        
+        self.local_lists_layout.addWidget(self.local_albums_list, 1)
+        self.local_lists_layout.addWidget(self.local_tracks_preview_list, 2)
+        
+        self.layout.addLayout(self.local_lists_layout)
+        
+        # Local Controls Layout
+        self.local_controls_layout = QHBoxLayout()
+        self.local_remove_root_button = QPushButton("Remove Selected Root Folder", self)
+        self.local_controls_layout.addWidget(self.local_remove_root_button)
+        self.layout.addLayout(self.local_controls_layout)
         
         self.layout.addWidget(self.spotify_checkbox)
         
@@ -78,12 +95,38 @@ class SourceFrame(QFrame):
         
         self.layout.addLayout(self.spotify_input_layout)
         
-        # Saved spotify sources list
-        self.spotify_saved_list = QListWidget(self)
-        self.spotify_saved_list.setObjectName("spotify_saved_list")
-        self.spotify_saved_list.setFixedHeight(100)
-        self.spotify_saved_list.setEnabled(False) # Disabled by default
-        self.layout.addWidget(self.spotify_saved_list)
+        # Split Spotify view: Playlists (Left) and Songs Preview (Right)
+        self.spotify_lists_layout = QHBoxLayout()
+        
+        self.spotify_playlists_list = QListWidget(self)
+        self.spotify_playlists_list.setObjectName("spotify_playlists_list")
+        self.spotify_playlists_list.setFixedHeight(150)
+        self.spotify_playlists_list.setEnabled(False) # Disabled by default
+        
+        self.spotify_tracks_preview_list = QListWidget(self)
+        self.spotify_tracks_preview_list.setObjectName("spotify_tracks_preview_list")
+        self.spotify_tracks_preview_list.setFixedHeight(150)
+        self.spotify_tracks_preview_list.setEnabled(False)
+        self.spotify_tracks_preview_list.setSelectionMode(QListWidget.SingleSelection) # Allow selection for track deletion
+        
+        self.spotify_lists_layout.addWidget(self.spotify_playlists_list, 1) # 1 part width
+        self.spotify_lists_layout.addWidget(self.spotify_tracks_preview_list, 2) # 2 parts width
+        
+        self.layout.addLayout(self.spotify_lists_layout)
+        
+        # Spotify Controls Layout
+        self.spotify_controls_layout = QHBoxLayout()
+        self.spotify_delete_playlist_button = QPushButton("Delete Playlist", self)
+        self.spotify_delete_playlist_button.setEnabled(False)
+        self.spotify_delete_track_button = QPushButton("Delete Track", self)
+        self.spotify_delete_track_button.setEnabled(False)
+        self.spotify_stop_download_button = QPushButton("Stop Download", self)
+        self.spotify_stop_download_button.setEnabled(False)
+        
+        self.spotify_controls_layout.addWidget(self.spotify_delete_playlist_button)
+        self.spotify_controls_layout.addWidget(self.spotify_delete_track_button)
+        self.spotify_controls_layout.addWidget(self.spotify_stop_download_button)
+        self.layout.addLayout(self.spotify_controls_layout)
         
         # Download Status Label
         self.download_status_label = QLabel("", self)

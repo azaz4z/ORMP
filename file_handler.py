@@ -91,6 +91,34 @@ class FileHandler:
             
         return songs, songs_map
 
+    def get_local_albums(self, directory):
+        albums = {}
+        if not os.path.exists(directory):
+            return albums
+            
+        valid_extensions = ('.mp3', '.wav', '.flac', '.ogg', '.m4a')
+        try:
+            singles = {}
+            for f in os.listdir(directory):
+                full_path = os.path.join(directory, f)
+                if os.path.isfile(full_path) and f.lower().endswith(valid_extensions):
+                    singles[f] = full_path
+                elif os.path.isdir(full_path):
+                    album_songs = {}
+                    for sub_f in os.listdir(full_path):
+                        sub_path = os.path.join(full_path, sub_f)
+                        if os.path.isfile(sub_path) and sub_f.lower().endswith(valid_extensions):
+                            album_songs[sub_f] = sub_path
+                    if album_songs:
+                        albums[f] = album_songs
+            
+            if singles:
+                albums["Singles"] = singles
+        except Exception as e:
+            print(f"Error reading directory {directory}: {e}")
+            
+        return albums
+
     def load_state(self, module):
         state_dir = "states"
         file_path = os.path.join(state_dir, f"{module}.json")

@@ -3,8 +3,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtGui import QPainter
 from PySide6.QtCore import Qt
 
-from vinyl.skin_type.skin_2d import draw_2d_vinyl
-from vinyl.skin_type.skin_3d import Skin3D
+from vinyl.skin_type.bidimensional import draw_2d_vinyl
+from vinyl.skin_type.threedimensional import Skin3D
 
 class VinylVisual(QWidget):
     def __init__(self, vinyl_model, parent=None):
@@ -37,6 +37,10 @@ class VinylVisual(QWidget):
         
         # Transparent for mouse events so scratch still works
         self.container_3d.setAttribute(Qt.WA_TransparentForMouseEvents)
+        
+        from PySide6.QtWidgets import QSizePolicy
+        self.container_3d.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        
         self.container_3d.hide() # Hidden by default
         
         self.layout.addWidget(self.container_3d)
@@ -47,6 +51,11 @@ class VinylVisual(QWidget):
             self.container_3d.show()
         else:
             self.container_3d.hide()
+        self.update()
+
+    def set_postprocessing(self, effect, value):
+        if hasattr(self, "skin_3d") and self.skin_3d:
+            self.skin_3d.set_postprocessing(effect, value)
         self.update()
 
     def showEvent(self, event):
@@ -80,10 +89,18 @@ class VinylVisual(QWidget):
         self._prev_physical_angle = self.vinyl_model.angle
         
         # Visual angle animation (chases the physical angle to avoid sudden jumps)
-        diff = self.vinyl_model.angle - self.visual_angle
-        step = diff * 0.15  # Approaches 15% per frame
-        self.visual_angle += step
-        self._last_visual_step = step  # Remember for tab-switch velocity restore
+        if getattr(self, "is_downloading", False):
+            step = 0.08 # Slower, calm constant rotation for download indicator
+            self.visual_angle += step
+            self._last_visual_step = step
+            self.vinyl_model.angle = self.visual_angle
+            self.vinyl_model.prev_angle = self.visual_angle
+            self._prev_physical_angle = self.visual_angle
+        else:
+            diff = self.vinyl_model.angle - self.visual_angle
+            step = diff * 0.15  # Approaches 15% per frame
+            self.visual_angle += step
+            self._last_visual_step = step  # Remember for tab-switch velocity restore
         
         # Y rotation physics (acceleration and braking)
         if self.tilt_y_active:
@@ -150,6 +167,12 @@ class VinylVisual(QWidget):
                 delta -= 2 * math.pi
             elif delta < -math.pi:
                 delta += 2 * math.pi
+                
+            # Si estamos viendo la parte trasera del disco (rotado entre 90 y 270 grados en Y),
+            # invertimos el delta para que al arrastrar el mouse la rotación se sienta natural.
+            tilt_y = self.current_tilt_y % 360
+            if 90 < tilt_y < 270:
+                delta = -delta
                 
             self.vinyl_model.move_mouse(delta)
             self.prev_mouse_angle = current_mouse_angle
